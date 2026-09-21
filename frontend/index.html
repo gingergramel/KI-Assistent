@@ -20,8 +20,18 @@
 
       <h2>Tägliches Briefing</h2>
       <button id="briefing-btn">Briefing abrufen</button>
-      <pre id="wetter-ausgabe">Noch kein Wetter abgerufen.</pre>
+      <pre id="wetter-ausgabe" class="ausgabe-box">Noch kein Wetter abgerufen.</pre>
     </section>
+
+    <section id="news-section">
+  <div id="news-logo-container">
+    <img id="news-logo" src="assets/icons/Logo_News.png" alt="News-Logo">
+  </div>
+
+  <h2>Aktuelle Nachrichten</h2>
+  <button id="news-btn">News abrufen</button>
+  <div id="news-ausgabe" class="ausgabe-box">Noch keine News abgerufen.</div>
+</section>
 
     <section id="chat-section">
       <h2>Chat</h2>
@@ -34,9 +44,10 @@
     </section>
   </main>
 
-  <script src="js/geolocation.js"></script>
-  <script src="js/weather.js"></script>
-  <script src="js/chat.js"></script>
-  <script src="js/main.js"></script>
+<script src="js/geolocation.js"></script>
+<script src="js/weather.js"></script>
+<script src="js/news.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

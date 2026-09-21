@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, HTMLResponse
 from pydantic import BaseModel
 
 from weather import get_weather_forecast, format_weather_human, get_weather_auto_human
+from news import get_top_news, format_news_human, format_news_html
 from llm import ask_gemini
 
 app = FastAPI()
@@ -45,6 +46,26 @@ def wetter_lesbar(koordinaten: Koordinaten):
     """Wetterverlauf für gegebene Koordinaten, als lesbarer Text."""
     daten = get_weather_forecast(koordinaten.lat, koordinaten.lon)
     return format_weather_human(daten)
+
+
+@app.get("/news")
+def news():
+    """News-Artikel, strukturiert (für die KI/Weiterverarbeitung)."""
+    return get_top_news()
+
+
+@app.get("/news/lesbar", response_class=PlainTextResponse)
+def news_lesbar():
+    """News-Artikel als lesbarer Text."""
+    daten = get_top_news()
+    return format_news_human(daten)
+
+
+@app.get("/news/html", response_class=HTMLResponse)
+def news_html():
+    """News-Artikel als HTML mit klickbaren Links."""
+    daten = get_top_news()
+    return format_news_html(daten)
 
 
 @app.get("/llm-test")

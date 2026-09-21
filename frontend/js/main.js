@@ -8,6 +8,15 @@ document.addEventListener("DOMContentLoaded", () => {
     wetterAusgabe.textContent = text;
   });
 
+  const newsBtn = document.getElementById("news-btn");
+  const newsAusgabe = document.getElementById("news-ausgabe");
+
+  newsBtn.addEventListener("click", async () => {
+    newsAusgabe.innerHTML = "Lade News...";
+    const html = await holeNews();
+    newsAusgabe.innerHTML = html;
+  });
+
   const chatSendenBtn = document.getElementById("chat-senden-btn");
   const chatEingabe = document.getElementById("chat-eingabe");
 

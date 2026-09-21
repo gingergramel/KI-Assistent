@@ -44,13 +44,27 @@ button:hover {
   background-color: #235a94;
 }
 
-#wetter-ausgabe {
+.ausgabe-box {
   margin-top: 12px;
   white-space: pre-wrap;
   background: #f0f0f0;
   padding: 10px;
   border-radius: 6px;
   font-size: 0.9rem;
+}
+
+.ausgabe-box p {
+  margin: 4px 0;
+  white-space: normal;
+}
+
+.ausgabe-box a {
+  color: #2b6cb0;
+  text-decoration: none;
+}
+
+.ausgabe-box a:hover {
+  text-decoration: underline;
 }
 
 #chat-verlauf {
@@ -88,6 +102,7 @@ button:hover {
   text-align: left;
   color: #333;
 }
+
 #briefing-section {
   position: relative;
 }
@@ -109,6 +124,32 @@ button:hover {
 }
 
 #wetter-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#news-section {
+  position: relative;
+}
+
+#news-logo-container {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  overflow: hidden;
+}
+
+#news-logo {
   width: 100%;
   height: 100%;
   object-fit: cover;
