@@ -8,6 +8,7 @@ from llm import ask_gemini
 
 app = FastAPI()
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # für Entwicklung offen, später auf konkrete Domain einschränken
