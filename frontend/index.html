@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KI-Assistent</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header>
+    <h1>KI-Assistent</h1>
+  </header>
+
+  <main>
+    <section id="briefing-section">
+      <h2>Tägliches Briefing</h2>
+      <button id="briefing-btn">Briefing abrufen</button>
+      <pre id="wetter-ausgabe">Noch kein Wetter abgerufen.</pre>
+    </section>
+
+    <section id="chat-section">
+      <h2>Chat</h2>
+      <div id="chat-verlauf"></div>
+      <div id="chat-eingabe-bereich">
+        <input type="text" id="chat-eingabe" placeholder="Frag den Assistenten..." />
+        <button id="chat-senden-btn">Senden</button>
+        <button id="mikrofon-btn">🎤</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/geolocation.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
