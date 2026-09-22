@@ -3,4 +3,6 @@ __pycache__/
 .env
 *.pyc
 node_modules/
-client-secret.json
+credentials.json
+token.json
+client-nur-für-mich.json

@@ -43,6 +43,14 @@ button {
 button:hover {
   background-color: #235a94;
 }
+#calendarButton {
+    background: #2876bd;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;}
 
 #wetter-ausgabe {
   margin-top: 12px;
@@ -112,4 +120,30 @@ button:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+#calendarOutput {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.calendar-event {
+    background-color: #f4f6f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.calendar-event-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.calendar-event-date,
+.calendar-event-time {
+    font-size: 15px;
+    color: #555;
+    margin-top: 3px;
 }

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
+from calendar_service import get_upcoming_events
 
 from weather import get_weather_forecast, format_weather_human, get_weather_auto_human
 from llm import ask_gemini
@@ -53,3 +54,23 @@ def llm_test():
     """Testet, ob die Gemini-API-Verbindung funktioniert."""
     antwort = ask_gemini("Sag mir in einem Satz, dass die Verbindung funktioniert.")
     return {"antwort": antwort}
+
+@app.get("/kalender")
+def kalender():
+    """Liest die nächsten Termine aus dem Google-Kalender."""
+    events = get_upcoming_events()
+
+    termine = []
+
+    for event in events:
+        start = event["start"].get(
+            "dateTime",
+            event["start"].get("date")
+        )
+
+        termine.append({
+            "titel": event.get("summary", "Ohne Titel"),
+            "start": start
+        })
+
+    return {"termine": termine}
