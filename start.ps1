@@ -1,5 +1,5 @@
 # Backend starten (in neuem Fenster)
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd backend; venv\Scripts\activate; uvicorn main:app --reload"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd backend; .\venv\Scripts\Activate.ps1; python -m uvicorn main:app --reload"
 
 # Kurz warten, damit das Backend hochfahren kann
 Start-Sleep -Seconds 2
