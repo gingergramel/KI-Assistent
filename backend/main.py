@@ -68,6 +68,10 @@ def news_html():
     return format_news_html(daten)
 
 
+from llm import ask_gemini
+
+# ... bei den anderen Endpoints:
+
 @app.get("/llm-test")
 def llm_test():
     """Testet, ob die Gemini-API-Verbindung funktioniert."""
