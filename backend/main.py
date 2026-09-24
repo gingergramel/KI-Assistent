@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, HTMLResponse
 from pydantic import BaseModel
 from calendar_service import get_upcoming_events
+from mail_service import get_inbox_mails
 
 from weather import get_weather_forecast, format_weather_human, get_weather_auto_human
 from news import get_top_news, format_news_human, format_news_html
@@ -99,3 +100,7 @@ def kalender():
         })
 
     return {"termine": termine}
+
+@app.get("/api/mails")
+def get_mails():
+    return get_inbox_mails(20)

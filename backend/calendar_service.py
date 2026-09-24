@@ -16,6 +16,7 @@ TOKEN_FILE = os.path.join(BASE_DIR, "token.json")
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/gmail.readonly",
 ]
 
 
