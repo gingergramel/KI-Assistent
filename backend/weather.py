@@ -55,3 +55,8 @@ def get_weather_auto_human():
     standort = get_location_by_ip()
     daten = get_weather_forecast(standort["lat"], standort["lon"])
     return format_weather_human(daten)
+
+def get_weather_auto_json():
+    """Wie get_weather_auto_human, aber strukturiert statt Text."""
+    standort = get_location_by_ip()
+    return get_weather_forecast(standort["lat"], standort["lon"])

@@ -50,6 +50,15 @@ def wetter_lesbar(koordinaten: Koordinaten):
     return format_weather_human(daten)
 
 
+from weather import get_weather_forecast, format_weather_human, get_weather_auto_human, get_weather_auto_json
+
+# ... bei den anderen Endpoints:
+
+@app.get("/wetter/auto/json")
+def wetter_auto_json():
+    """Standort automatisch erkennen, Wetterdaten strukturiert zurückgeben (für Kartenanzeige)."""
+    return get_weather_auto_json()
+
 @app.get("/news")
 def news():
     """News-Artikel, strukturiert (für die KI/Weiterverarbeitung)."""
@@ -99,3 +108,5 @@ def kalender():
         })
 
     return {"termine": termine}
+
+
