@@ -43,6 +43,7 @@ button {
 button:hover {
   background-color: #235a94;
 }
+
 #calendarButton {
     background: #2876bd;
     color: white;
@@ -50,7 +51,8 @@ button:hover {
     padding: 12px 18px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 16px;}
+    font-size: 16px;
+}
 
 .ausgabe-box {
   margin-top: 12px;
@@ -163,6 +165,32 @@ button:hover {
   object-fit: cover;
 }
 
+.calendar-card {
+  position: relative;
+}
+
+#kalender-logo-container {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  overflow: hidden;
+}
+
+#kalender-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 #calendarOutput {
     margin-top: 15px;
     display: flex;
@@ -188,4 +216,88 @@ button:hover {
     font-size: 15px;
     color: #555;
     margin-top: 3px;
+}
+
+.wetter-titel {
+  margin: 12px 0 10px 0;
+  font-size: 1rem;
+  color: #444;
+}
+
+.wetter-karten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.wetter-karte {
+  flex: 1;
+  min-width: 90px;
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.wetter-karte::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.wetter-karte > * {
+  position: relative;
+  z-index: 1;
+}
+
+.wetter-uhrzeit {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.wetter-temp {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 6px 0 4px 0;
+}
+
+.wetter-beschreibung {
+  font-size: 0.75rem;
+  margin-bottom: 6px;
+  min-height: 28px;
+}
+
+.wetter-regen {
+  font-size: 0.8rem;
+  opacity: 0.95;
+}
+
+.karte-sonnig {
+  background-image: url("../assets/wetter-hintergruende/sonnig.jpg");
+}
+
+.karte-bewoelkt {
+  background-image: url("../assets/wetter-hintergruende/bewoelkt.jpg");
+}
+
+.karte-regen {
+  background-image: url("../assets/wetter-hintergruende/regen.jpg");
+}
+
+.karte-gewitter {
+  background-image: url("../assets/wetter-hintergruende/gewitter.jpg");
+}
+
+.karte-schnee {
+  background-image: url("../assets/wetter-hintergruende/schnee.jpg");
+}
+
+.karte-standard {
+  background-image: url("../assets/wetter-hintergruende/standard.jpg");
 }

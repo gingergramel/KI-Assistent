@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const wetterAusgabe = document.getElementById("wetter-ausgabe");
 
   briefingBtn.addEventListener("click", async () => {
-    wetterAusgabe.textContent = "Lade Wetterdaten...";
-    const text = await holeWetter();
-    wetterAusgabe.textContent = text;
+    wetterAusgabe.innerHTML = "Lade Wetterdaten...";
+    const html = await holeWetter();
+    wetterAusgabe.innerHTML = html;
   });
 
   const newsBtn = document.getElementById("news-btn");

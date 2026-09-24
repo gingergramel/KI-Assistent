@@ -9,7 +9,7 @@
 <body>
 
   <header>
-    <h1>KI-Assistent</h1>
+    <h1>Tägliche Updates</h1>
   </header>
 
   <main>
@@ -18,12 +18,16 @@
         <img id="wetter-logo" src="assets/icons/Logo_Weather.png" alt="Wetter-Logo">
       </div>
 
-      <h2>Tägliches Briefing</h2>
-      <button id="briefing-btn">Briefing abrufen</button>
-      <pre id="wetter-ausgabe" class="ausgabe-box">Noch kein Wetter abgerufen.</pre>
+      <h2>Wetter</h2>
+      <button id="briefing-btn">Wetter abrufen</button>
+      <div id="wetter-ausgabe">Noch kein Wetter abgerufen.</div>
     </section>
-    
+
     <section class="calendar-card">
+      <div id="kalender-logo-container">
+        <img id="kalender-logo" src="assets/icons/Logo_Kalender.png" alt="Kalender-Logo">
+      </div>
+
       <h2>📅 Kalender</h2>
 
       <button id="calendarButton">
@@ -36,14 +40,14 @@
     </section>
 
     <section id="news-section">
-  <div id="news-logo-container">
-    <img id="news-logo" src="assets/icons/Logo_News.png" alt="News-Logo">
-  </div>
+      <div id="news-logo-container">
+        <img id="news-logo" src="assets/icons/Logo_News.png" alt="News-Logo">
+      </div>
 
-  <h2>Aktuelle Nachrichten</h2>
-  <button id="news-btn">News abrufen</button>
-  <div id="news-ausgabe" class="ausgabe-box">Noch keine News abgerufen.</div>
-</section>
+      <h2>Aktuelle Nachrichten</h2>
+      <button id="news-btn">News abrufen</button>
+      <div id="news-ausgabe" class="ausgabe-box">Noch keine News abgerufen.</div>
+    </section>
 
     <section id="chat-section">
       <h2>Chat</h2>
@@ -55,7 +59,6 @@
       </div>
     </section>
   </main>
-
 
 <script src="js/geolocation.js"></script>
 <script src="js/weather.js"></script>
