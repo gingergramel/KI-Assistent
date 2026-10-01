@@ -127,3 +127,4 @@ def termin_anlegen(termin: NeuerTermin):
 @app.get("/api/mails")
 def get_mails():
     return get_inbox_mails(20)
+#todo wenn man mehr mails will, dann muss man die variable eine zeile darüber ändern.
