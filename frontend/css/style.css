@@ -8,13 +8,14 @@
 body {
   background-color: #f5f5f5;
   color: #222;
-  padding: 20px;
-  max-width: 700px;
+  padding: 16px 20px;
+  max-width: 1700px;
   margin: 0 auto;
 }
 
 header h1 {
-  margin-bottom: 20px;
+  font-size: 1.6rem;
+  margin-bottom: 12px;
 }
 
 section {
@@ -45,38 +46,99 @@ button:hover {
 }
 
 #calendarButton {
-    background: #2876bd;
-    color: white;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
+  width: 60%;
 }
 
-.ausgabe-box {
+/* ===== Layout: drei Spalten bis ganz nach unten, Chat nur durch Scrollen sichtbar ===== */
+.drei-spalten {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+  height: calc(100dvh - 80px);
+}
+
+.spalte {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.spalte section {
+  margin-bottom: 0;
+}
+
+/* Kalender: normale Höhe, Karte reicht aber bis unten */
+.calendar-card {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Wetter behält seine natürliche Höhe */
+#briefing-section {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* News und Mail reichen bis unten, nur die Listen scrollen */
+#news-section,
+.mail-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-height: 0;
+}
+
+.mail-section {
+  padding: 20px;
+}
+
+#news-ausgabe,
+#mail-list {
+  align-self: stretch;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   margin-top: 12px;
-  white-space: pre-wrap;
-  background: #f0f0f0;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 0.9rem;
 }
 
-.ausgabe-box p {
-  margin: 4px 0;
-  white-space: normal;
+/* ===== Logos ===== */
+#wetter-logo-container,
+#news-logo-container,
+#kalender-logo-container,
+#mail-logo-container {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  overflow: hidden;
 }
 
-.ausgabe-box a {
-  color: #2b6cb0;
-  text-decoration: none;
+#wetter-logo,
+#news-logo,
+#kalender-logo,
+#mail-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.ausgabe-box a:hover {
-  text-decoration: underline;
-}
-
+/* ===== Chat ===== */
 #chat-verlauf {
   min-height: 150px;
   max-height: 300px;
@@ -113,111 +175,7 @@ button:hover {
   color: #333;
 }
 
-#briefing-section {
-  position: relative;
-}
-
-#wetter-logo-container {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 60px;
-  height: 60px;
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  overflow: hidden;
-}
-
-#wetter-logo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-#news-section {
-  position: relative;
-}
-
-#news-logo-container {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 60px;
-  height: 60px;
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  overflow: hidden;
-}
-
-#news-logo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.calendar-card {
-  position: relative;
-}
-
-#kalender-logo-container {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 60px;
-  height: 60px;
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  overflow: hidden;
-}
-
-#kalender-logo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-#calendarOutput {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.calendar-event {
-    background-color: #f4f6f8;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 14px 16px;
-}
-
-.calendar-event-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-.calendar-event-date,
-.calendar-event-time {
-    font-size: 15px;
-    color: #555;
-    margin-top: 3px;
-}
-
+/* ===== Wetter ===== */
 .wetter-titel {
   margin: 12px 0 10px 0;
   font-size: 1rem;
@@ -302,46 +260,437 @@ button:hover {
   background-image: url("../assets/wetter-hintergruende/standard.jpg");
 }
 
-/* mail styles */
-.mail-section {
-    padding: 20px;
+/* ===== Kalender ===== */
+#calendarOutput {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 50vh;
+  overflow-y: auto;
 }
 
-#mail-list {
-    margin-top: 15px;
+.calendar-event {
+  background-color: #f4f6f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 14px 16px;
 }
 
+.calendar-event-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.calendar-event-date,
+.calendar-event-time {
+  font-size: 15px;
+  color: #555;
+  margin-top: 3px;
+}
+
+/* Link-Button: "+ Neuer Termin" */
+.link-button {
+  background: none;
+  color: #2b6cb0;
+  padding: 4px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: underline;
+  display: block;
+  width: fit-content;
+  margin: 10px 0 2px 0;
+}
+
+.link-button:hover {
+  background: none;
+  color: #1a4a7a;
+}
+
+/* Termin-Formular: eigene kleine Karte mit Labels */
+#termin-formular {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f4f6f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+#termin-formular[hidden] {
+  display: none;
+}
+
+.termin-feld {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.termin-feld label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555;
+}
+
+#termin-formular input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  background: white;
+}
+
+#termin-formular input:focus {
+  outline: none;
+  border-color: #2b6cb0;
+  box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.15);
+}
+
+#termin-formular button[type="submit"] {
+  margin-top: 4px;
+  width: 100%;
+}
+
+#termin-status {
+  font-size: 0.85rem;
+  color: #2b6cb0;
+  margin-bottom: 8px;
+  min-height: 1.2em;
+}
+
+.ansicht-umschalter {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.ansicht-umschalter button {
+  background: #e6ecf3;
+  color: #2b6cb0;
+  padding: 6px 14px;
+}
+
+.ansicht-umschalter button.aktiv {
+  background: #2b6cb0;
+  color: white;
+}
+
+#kalender-ansicht[hidden],
+#calendarOutput[hidden] {
+  display: none;
+}
+
+.kal-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.kal-monat-titel {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.kal-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.kal-nav button {
+  padding: 4px 10px;
+  font-size: 0.9rem;
+}
+
+.kal-raster {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.kal-wochentag {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.6;
+  padding: 4px 0;
+}
+
+.kal-tag {
+  aspect-ratio: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.15s;
+}
+
+.kal-tag:hover {
+  background: #eef4fb;
+}
+
+.kal-tag.leer {
+  border: none;
+  background: transparent;
+  cursor: default;
+}
+
+.kal-tag.heute {
+  border-color: #2b6cb0;
+  font-weight: bold;
+}
+
+.kal-tag.gewaehlt {
+  background: #dbe8f7;
+  border-color: #2b6cb0;
+}
+
+.kal-punkte {
+  display: flex;
+  gap: 3px;
+  min-height: 6px;
+}
+
+.kal-punkt {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2b6cb0;
+}
+
+.kal-tagesliste {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kal-tages-titel {
+  font-weight: 600;
+}
+
+.kal-keine {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.kal-termin {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  background: #f4f6f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.kal-termin-zeit {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2b6cb0;
+  white-space: nowrap;
+}
+
+.kal-termin-name {
+  font-weight: 500;
+}
+
+/* ===== Mail ===== */
 .mail-box {
-    background: #ffffff;
-    border: 1px solid #dddddd;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .mail-box:hover {
-    transform: translateY(-2px);
-    transition: 0.2s;
+  transform: translateY(-2px);
+  transition: 0.2s;
 }
 
 .mail-sender {
-    font-weight: bold;
-    margin-bottom: 5px;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .mail-subject {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .mail-snippet {
-    font-size: 14px;
-    margin-bottom: 10px;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .mail-date {
-    font-size: 12px;
-    opacity: 0.6;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* ===== News ===== */
+#news-ausgabe {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.news-karte {
+  flex-shrink: 0;
+  display: flex;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 12px;
+  padding: 14px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.news-karte:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.news-text {
+  min-width: 0;
+}
+
+.news-quelle {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #2b6cb0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.news-titel {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+
+.news-beschreibung {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-datum {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.news-fehler {
+  color: #b00020;
+}
+
+/* ===== Schmale Bildschirme (Handy): alles untereinander ===== */
+@media (max-width: 1000px) {
+  .drei-spalten {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  .spalte-mitte {
+    order: -1;
+  }
+
+  .calendar-card,
+  #news-section,
+  .mail-section {
+    flex: none;
+  }
+
+  #news-ausgabe,
+  #mail-list {
+    flex: none;
+    max-height: 60vh;
+  }
+}
+
+/* ===== Chat als schwebendes Fenster ===== */
+#chat-toggle {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  line-height: 1;
+  background: #2b6cb0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  transition: transform 0.15s;
+}
+
+#chat-toggle:hover {
+  transform: scale(1.08);
+}
+
+#chat-section {
+  position: fixed;
+  left: 20px;
+  bottom: 92px;
+  width: min(380px, calc(100vw - 40px));
+  margin: 0;
+  z-index: 999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+#chat-section[hidden] {
+  display: none;
+}
+
+#chat-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#chat-kopf h2 {
+  margin: 0;
+}
+
+#chat-schliessen {
+  background: transparent;
+  color: #555;
+  padding: 4px 8px;
+  font-size: 1rem;
+}
+
+#chat-schliessen:hover {
+  background: #eee;
+}
+
+#chat-verlauf {
+  min-height: 0;
+  height: 280px;
+  max-height: none;
 }

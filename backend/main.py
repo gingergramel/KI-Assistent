@@ -1,16 +1,17 @@
+from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, HTMLResponse
 from pydantic import BaseModel
-from calendar_service import get_upcoming_events
-from mail_service import get_inbox_mails
 
-from weather import get_weather_forecast, format_weather_human, get_weather_auto_human
+from calendar_service import get_upcoming_events, create_event
+from mail_service import get_inbox_mails
+from weather import get_weather_forecast, format_weather_human, get_weather_auto_human, get_weather_auto_json
 from news import get_top_news, format_news_human, format_news_html
 from llm import ask_gemini
 
 app = FastAPI()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +26,12 @@ class Koordinaten(BaseModel):
     lon: float
 
 
+class NeuerTermin(BaseModel):
+    titel: str
+    start: str  # Format: "2026-10-05T14:30"
+    dauer_minuten: int = 60
+
+
 @app.get("/", response_class=PlainTextResponse)
 def root():
     """Startseite: zeigt direkt den automatisch erkannten Wetterverlauf als lesbaren Text."""
@@ -35,6 +42,12 @@ def root():
 def wetter_auto():
     """Standort automatisch per IP erkennen, Wetterverlauf als lesbaren Text zurückgeben."""
     return get_weather_auto_human()
+
+
+@app.get("/wetter/auto/json")
+def wetter_auto_json():
+    """Standort automatisch erkennen, Wetterdaten strukturiert zurückgeben (für Kartenanzeige)."""
+    return get_weather_auto_json()
 
 
 @app.post("/wetter")
@@ -50,15 +63,6 @@ def wetter_lesbar(koordinaten: Koordinaten):
     daten = get_weather_forecast(koordinaten.lat, koordinaten.lon)
     return format_weather_human(daten)
 
-
-from weather import get_weather_forecast, format_weather_human, get_weather_auto_human, get_weather_auto_json
-
-# ... bei den anderen Endpoints:
-
-@app.get("/wetter/auto/json")
-def wetter_auto_json():
-    """Standort automatisch erkennen, Wetterdaten strukturiert zurückgeben (für Kartenanzeige)."""
-    return get_weather_auto_json()
 
 @app.get("/news")
 def news():
@@ -80,15 +84,12 @@ def news_html():
     return format_news_html(daten)
 
 
-from llm import ask_gemini
-
-# ... bei den anderen Endpoints:
-
 @app.get("/llm-test")
 def llm_test():
     """Testet, ob die Gemini-API-Verbindung funktioniert."""
     antwort = ask_gemini("Sag mir in einem Satz, dass die Verbindung funktioniert.")
     return {"antwort": antwort}
+
 
 @app.get("/kalender")
 def kalender():
@@ -111,7 +112,18 @@ def kalender():
     return {"termine": termine}
 
 
+@app.post("/kalender/termin")
+def termin_anlegen(termin: NeuerTermin):
+    """Legt einen neuen Termin im Google-Kalender an."""
+    start_datetime = datetime.fromisoformat(termin.start)
+    erstelltes_event = create_event(termin.titel, start_datetime, termin.dauer_minuten)
+    return {
+        "erfolg": True,
+        "titel": erstelltes_event.get("summary"),
+        "start": erstelltes_event["start"].get("dateTime")
+    }
+
+
 @app.get("/api/mails")
 def get_mails():
     return get_inbox_mails(20)
-

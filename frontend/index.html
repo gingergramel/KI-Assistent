@@ -12,71 +12,150 @@
     <h1>Tägliche Updates</h1>
   </header>
 
-  <main>
-    <section id="briefing-section">
-      <div id="wetter-logo-container">
-        <img id="wetter-logo" src="assets/icons/Logo_Weather.png" alt="Wetter-Logo">
-      </div>
+  <main class="drei-spalten">
 
-      <h2>Wetter</h2>
-      <button id="briefing-btn">Wetter abrufen</button>
-      <div id="wetter-ausgabe">Noch kein Wetter abgerufen.</div>
-    </section>
+    <div class="spalte spalte-links">
+      <section class="calendar-card">
+        <div id="kalender-logo-container">
+          <img id="kalender-logo" src="assets/icons/Logo_Kalender.png" alt="Kalender-Logo">
+        </div>
 
-    <section class="calendar-card">
-      <div id="kalender-logo-container">
-        <img id="kalender-logo" src="assets/icons/Logo_Kalender.png" alt="Kalender-Logo">
-      </div>
+        <h2>📅 Kalender</h2>
 
-      <h2>📅 Kalender</h2>
-
-      <button id="calendarButton">
+        <button id="calendarButton">
           Termine abrufen
-      </button>
+        </button>
 
-      <div id="calendarOutput">
+        <button type="button" id="termin-toggle" class="link-button">+ Neuer Termin</button>
+
+        <form id="termin-formular" hidden>
+          <div class="termin-feld">
+            <label for="termin-titel">Titel</label>
+            <input type="text" id="termin-titel" placeholder="z. B. Zahnarzttermin" required>
+          </div>
+          <div class="termin-feld">
+            <label for="termin-datum">Datum</label>
+            <input type="date" id="termin-datum" required>
+          </div>
+          <div class="termin-feld">
+            <label for="termin-uhrzeit">Uhrzeit</label>
+            <input type="time" id="termin-uhrzeit" required>
+          </div>
+          <button type="submit">Termin anlegen</button>
+        </form>
+        <div id="termin-status"></div>
+
+        <div class="ansicht-umschalter">
+          <button id="ansicht-monat" class="aktiv">Monat</button>
+          <button id="ansicht-liste">Liste</button>
+        </div>
+
+        <div id="kalender-ansicht"></div>
+
+        <div id="calendarOutput" hidden>
           Noch keine Termine abgerufen.
-      </div>
-    </section>
-    <section class="mail-section">
-
-    <h2>Mail Eingang</h2>
-
-    <div id="mail-list">
-        Mails werden geladen...
+        </div>
+      </section>
     </div>
 
-</section>
+    <div class="spalte spalte-mitte">
+      <section id="briefing-section">
+        <div id="wetter-logo-container">
+          <img id="wetter-logo" src="assets/icons/Logo_Weather.png" alt="Wetter-Logo">
+        </div>
 
-    <section id="news-section">
-      <div id="news-logo-container">
-        <img id="news-logo" src="assets/icons/Logo_News.png" alt="News-Logo">
-      </div>
+        <h2>Wetter</h2>
+        <button id="briefing-btn">Wetter abrufen</button>
+        <div id="wetter-ausgabe">Noch kein Wetter abgerufen.</div>
+      </section>
 
-      <h2>Aktuelle Nachrichten</h2>
-      <button id="news-btn">News abrufen</button>
-      <div id="news-ausgabe" class="ausgabe-box">Noch keine News abgerufen.</div>
-    </section>
+      <section id="news-section">
+        <div id="news-logo-container">
+          <img id="news-logo" src="assets/icons/Logo_News.png" alt="News-Logo">
+        </div>
 
-    <section id="chat-section">
-      <h2>Chat</h2>
-      <div id="chat-verlauf"></div>
-      <div id="chat-eingabe-bereich">
-        <input type="text" id="chat-eingabe" placeholder="Frag den Assistenten..." />
-        <button id="chat-senden-btn">Senden</button>
-        <button id="mikrofon-btn">🎤</button>
-      </div>
-    </section>
+        <h2>Aktuelle Nachrichten</h2>
+        <button id="news-btn">News abrufen</button>
+        <div id="news-ausgabe">Noch keine News abgerufen.</div>
+      </section>
+    </div>
+
+    <div class="spalte spalte-rechts">
+      <section class="mail-section">
+        <div id="mail-logo-container">
+          <img id="mail-logo" src="assets/icons/Logo_Emails.png" alt="E-Mail-Logo">
+        </div>
+
+        <h2>Mail Eingang</h2>
+
+        <div id="mail-list">
+          Mails werden geladen...
+        </div>
+      </section>
+    </div>
+
   </main>
 
-<script src="js/geolocation.js"></script>
-<script src="js/weather.js"></script>
-<script src="js/news.js"></script>
-<script src="js/calendar.js"></script>
-<script src="js/chat.js"></script>
-<script src="js/main.js"></script>
-<script src="js/mail.js"></script>
+  <!-- Chat: runder Button unten links, öffnet das Chat-Fenster -->
+  <button id="chat-toggle" title="Chat öffnen" aria-label="Chat öffnen">💬</button>
 
+  <section id="chat-section" hidden>
+    <div id="chat-kopf">
+      <h2>Chat</h2>
+      <button id="chat-schliessen" title="Chat schließen" aria-label="Chat schließen">✕</button>
+    </div>
+    <div id="chat-verlauf"></div>
+    <div id="chat-eingabe-bereich">
+      <input type="text" id="chat-eingabe" placeholder="Frag den Assistenten..." />
+      <button id="chat-senden-btn">Senden</button>
+      <button id="mikrofon-btn">🎤</button>
+    </div>
+  </section>
+
+  <script src="js/geolocation.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/news.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/kalender-ansicht.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/mail.js"></script>
+
+  <script>
+    (function () {
+      const toggle = document.getElementById("chat-toggle");
+      const fenster = document.getElementById("chat-section");
+      const schliessen = document.getElementById("chat-schliessen");
+      const eingabe = document.getElementById("chat-eingabe");
+
+      function oeffnen() {
+        fenster.hidden = false;
+        toggle.textContent = "✕";
+        toggle.title = "Chat schließen";
+        eingabe.focus();
+      }
+
+      function zuklappen() {
+        fenster.hidden = true;
+        toggle.textContent = "💬";
+        toggle.title = "Chat öffnen";
+      }
+
+      toggle.addEventListener("click", () => {
+        if (fenster.hidden) {
+          oeffnen();
+        } else {
+          zuklappen();
+        }
+      });
+
+      schliessen.addEventListener("click", zuklappen);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !fenster.hidden) zuklappen();
+      });
+    })();
+  </script>
 
 </body>
 </html>

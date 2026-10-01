@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -64,3 +64,29 @@ def get_upcoming_events(max_results=10):
     ).execute()
 
     return result.get("items", [])
+
+
+def create_event(titel, start_datetime, dauer_minuten=60):
+    """Legt einen neuen Termin im primären Google-Kalender an."""
+    service = get_calendar_service()
+
+    ende_datetime = start_datetime + timedelta(minutes=dauer_minuten)
+
+    event = {
+        "summary": titel,
+        "start": {
+            "dateTime": start_datetime.isoformat(),
+            "timeZone": "Europe/Vienna",
+        },
+        "end": {
+            "dateTime": ende_datetime.isoformat(),
+            "timeZone": "Europe/Vienna",
+        },
+    }
+
+    erstelltes_event = service.events().insert(
+        calendarId="primary",
+        body=event
+    ).execute()
+
+    return erstelltes_event
