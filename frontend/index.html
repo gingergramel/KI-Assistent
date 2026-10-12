@@ -28,21 +28,52 @@
 
         <button type="button" id="termin-toggle" class="link-button">+ Neuer Termin</button>
 
+        
         <form id="termin-formular" hidden>
+
           <div class="termin-feld">
             <label for="termin-titel">Titel</label>
-            <input type="text" id="termin-titel" placeholder="z. B. Zahnarzttermin" required>
+            <input
+              type="text"
+              id="termin-titel"
+              placeholder="z. B. Zahnarzttermin"
+              required
+            >
           </div>
+
           <div class="termin-feld">
             <label for="termin-datum">Datum</label>
-            <input type="date" id="termin-datum" required>
+            <input
+              type="date"
+              id="termin-datum"
+              required
+            >
           </div>
+
           <div class="termin-feld">
-            <label for="termin-uhrzeit">Uhrzeit</label>
-            <input type="time" id="termin-uhrzeit" required>
+            <label for="termin-uhrzeit">Startzeit</label>
+            <input
+              type="time"
+              id="termin-uhrzeit"
+              required
+            >
           </div>
-          <button type="submit">Termin anlegen</button>
+
+          <div class="termin-feld">
+            <label for="termin-endzeit">Endzeit</label>
+            <input
+              type="time"
+              id="termin-endzeit"
+              required
+            >
+          </div>
+
+          <button type="submit">
+            Termin anlegen
+          </button>
+
         </form>
+
         <div id="termin-status"></div>
 
         <div class="ansicht-umschalter">

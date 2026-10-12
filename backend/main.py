@@ -10,6 +10,8 @@ from mail_service import get_inbox_mails
 from weather import get_weather_forecast, format_weather_human, get_weather_auto_human, get_weather_auto_json
 from news import get_top_news, format_news_human, format_news_html
 from llm import ask_gemini
+from datetime import datetime
+from calendar_service import check_calendar_availability
 
 app = FastAPI()
 
@@ -112,19 +114,53 @@ def kalender():
     return {"termine": termine}
 
 
+
 @app.post("/kalender/termin")
 def termin_anlegen(termin: NeuerTermin):
-    """Legt einen neuen Termin im Google-Kalender an."""
+    """Prüft die Verfügbarkeit und erstellt den Termin."""
+
     start_datetime = datetime.fromisoformat(termin.start)
-    erstelltes_event = create_event(termin.titel, start_datetime, termin.dauer_minuten)
+
+    ergebnis = create_event(
+        termin.titel,
+        start_datetime,
+        termin.dauer_minuten
+    )
+
+    if not ergebnis["erstellt"]:
+        return {
+            "erstellt": False,
+            "nachricht": ergebnis["nachricht"],
+            "konflikte": ergebnis.get("konflikte", [])
+        }
+
+    erstelltes_event = ergebnis["termin"]
+
     return {
-        "erfolg": True,
+        "erstellt": True,
+        "nachricht": "Termin wurde erfolgreich erstellt.",
         "titel": erstelltes_event.get("summary"),
-        "start": erstelltes_event["start"].get("dateTime")
+        "start": erstelltes_event["start"].get("dateTime"),
+        "ende": erstelltes_event["end"].get("dateTime")
     }
+
+
 
 
 @app.get("/api/mails")
 def get_mails():
     return get_inbox_mails(20)
 #todo wenn man mehr mails will, dann muss man die variable eine zeile darüber ändern.
+
+
+class TerminPruefung(BaseModel):
+    start: datetime
+    dauer_minuten: int = 60
+
+
+@app.post("/kalender/pruefen")
+def kalender_pruefen(termin: TerminPruefung):
+    return check_calendar_availability(
+        termin.start,
+        termin.dauer_minuten
+    )
