@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, HTMLResponse
 from pydantic import BaseModel
@@ -9,7 +9,7 @@ from calendar_service import get_upcoming_events, create_event
 from mail_service import get_inbox_mails
 from weather import get_weather_forecast, format_weather_human, get_weather_auto_human, get_weather_auto_json
 from news import get_top_news, format_news_human, format_news_html
-from llm import ask_gemini
+from llm import ask_gemini,chat_mit_gemini
 from datetime import datetime
 from calendar_service import check_calendar_availability
 
@@ -32,6 +32,11 @@ class NeuerTermin(BaseModel):
     titel: str
     start: str  # Format: "2026-10-05T14:30"
     dauer_minuten: int = 60
+
+
+class ChatAnfrage(BaseModel):
+    nachricht: str
+    session_id: str = "standard"
 
 
 @app.get("/", response_class=PlainTextResponse)
@@ -90,6 +95,21 @@ def news_html():
 def llm_test():
     """Testet, ob die Gemini-API-Verbindung funktioniert."""
     antwort = ask_gemini("Sag mir in einem Satz, dass die Verbindung funktioniert.")
+    return {"antwort": antwort}
+
+
+@app.post("/chat")
+def chat(anfrage: ChatAnfrage):
+    """Nimmt eine Nutzernachricht entgegen, leitet sie an Gemini weiter und gibt die Antwort zurück."""
+    if not anfrage.nachricht.strip():
+        raise HTTPException(status_code=400, detail="Die Nachricht darf nicht leer sein.")
+
+    try:
+        antwort = chat_mit_gemini(anfrage.session_id, anfrage.nachricht)
+    except Exception as fehler:
+        print("Chat-Fehler:", fehler)
+        raise HTTPException(status_code=502, detail="Gemini hat nicht geantwortet: " + str(fehler))
+
     return {"antwort": antwort}
 
 
