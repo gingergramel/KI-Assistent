@@ -60,35 +60,97 @@ terminToggle.addEventListener("click", () => {
   terminToggle.textContent = istOffen ? "+ Neuer Termin" : "– Formular schließen";
 });
 
+
 terminFormular.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const titel = document.getElementById("termin-titel").value;
+    const titel = document.getElementById("termin-titel").value.trim();
     const datum = document.getElementById("termin-datum").value;
-    const uhrzeit = document.getElementById("termin-uhrzeit").value;
-    const start = `${datum}T${uhrzeit}`;
+    const startzeit = document.getElementById("termin-uhrzeit").value;
+    const endzeit = document.getElementById("termin-endzeit").value;
 
-    terminStatus.textContent = "Termin wird angelegt...";
+    const start = new Date(`${datum}T${startzeit}`);
+    const ende = new Date(`${datum}T${endzeit}`);
+
+    // Prüfen, ob die Uhrzeiten gültig sind
+    if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(ende.getTime())
+    ) {
+        terminStatus.textContent = "Ungültiges Datum oder Uhrzeit.";
+        return;
+    }
+
+    // Endzeit muss nach Startzeit liegen
+    if (ende <= start) {
+        terminStatus.textContent =
+            "Die Endzeit muss nach der Startzeit liegen.";
+        return;
+    }
+
+    // Dauer in Minuten berechnen
+    const dauer_minuten = Math.round(
+        (ende - start) / (1000 * 60)
+    );
+
+    terminStatus.textContent =
+        "Kalender wird auf freie Termine überprüft...";
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/kalender/termin", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ titel, start })
-        });
+        const response = await fetch(
+            "http://127.0.0.1:8000/kalender/termin",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    titel: titel,
+                    start: `${datum}T${startzeit}`,
+                    dauer_minuten: dauer_minuten
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        console.log("Kalender-Antwort:", data);
 
         if (!response.ok) {
-            throw new Error("Termin konnte nicht angelegt werden.");
+            terminStatus.textContent =
+                "Serverfehler: " +
+                JSON.stringify(data.detail || data);
+            return;
         }
 
-        terminStatus.textContent = "Termin angelegt: " + titel;
-        terminFormular.reset();
-        terminFormular.hidden = true;
-        terminToggle.textContent = "+ Neuer Termin";
-        calendarButton.click(); // Liste neu laden
+        // Zeitraum ist bereits belegt
+        if (data.erstellt === false) {
+            terminStatus.textContent =
+                "⚠️ " + data.nachricht;
+            return;
+        }
+
+        // Termin wurde erstellt
+        if (data.erstellt === true) {
+            terminStatus.textContent =
+                "✅ Termin erfolgreich angelegt: " + titel;
+
+            terminFormular.reset();
+            terminFormular.hidden = true;
+            terminToggle.textContent = "+ Neuer Termin";
+
+            calendarButton.click();
+            return;
+        }
+
+        terminStatus.textContent =
+            "Unerwartete Antwort vom Backend.";
 
     } catch (error) {
-        console.error(error);
-        terminStatus.textContent = "Fehler beim Anlegen des Termins.";
+        console.error("Kalenderfehler:", error);
+
+        terminStatus.textContent =
+            "Fehler beim Anlegen des Termins: " +
+            error.message;
     }
 });
