@@ -98,17 +98,15 @@ def llm_test():
 
 @app.post("/chat")
 def chat(anfrage: ChatAnfrage):
-    """Nimmt eine Nutzernachricht entgegen, leitet sie an Gemini weiter und gibt die Antwort zurück."""
+    """Nimmt eine Nutzernachricht entgegen. Gemini beantwortet sie und ruft bei Bedarf Kalender, Wetter und News auf."""
     if not anfrage.nachricht.strip():
         raise HTTPException(status_code=400, detail="Die Nachricht darf nicht leer sein.")
 
     try:
-        antwort = chat_mit_gemini(anfrage.session_id, anfrage.nachricht)
+        return chat_mit_gemini(anfrage.session_id, anfrage.nachricht)
     except Exception as fehler:
         print("Chat-Fehler:", fehler)
         raise HTTPException(status_code=502, detail="Gemini hat nicht geantwortet: " + str(fehler))
-
-    return {"antwort": antwort}
 
 
 @app.get("/kalender")

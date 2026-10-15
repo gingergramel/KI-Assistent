@@ -66,6 +66,22 @@ def get_upcoming_events(max_results=10):
     return result.get("items", [])
 
 
+def get_events_between(start_dt, end_dt):
+    """Liefert alle Termine, die den Zeitraum start_dt bis end_dt berühren.
+    Datetimes ohne Zeitzone werden als lokale Zeit behandelt."""
+    service = get_calendar_service()
+
+    result = service.events().list(
+        calendarId="primary",
+        timeMin=start_dt.astimezone().isoformat(),
+        timeMax=end_dt.astimezone().isoformat(),
+        singleEvents=True,
+        orderBy="startTime"
+    ).execute()
+
+    return result.get("items", [])
+
+
 def create_event(titel, start_datetime, dauer_minuten=60):
     """Legt einen neuen Termin im primären Google-Kalender an."""
     service = get_calendar_service()

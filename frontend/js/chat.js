@@ -41,15 +41,34 @@ async function sendeChatNachricht() {
     });
 
     if (!response.ok) {
-      throw new Error("Server antwortete mit Status " + response.status);
+      // Das Backend läuft, hat aber einen Fehler gemeldet (z. B. Gemini hat abgelehnt)
+      let grund = "";
+      try {
+        const fehlerDaten = await response.json();
+        grund = fehlerDaten.detail || "";
+      } catch (e) {
+        // Antwort war kein JSON
+      }
+
+      if (grund.includes("429") || grund.includes("RESOURCE_EXHAUSTED")) {
+        antwortFeld.textContent = "Das Gemini-Kontingent ist gerade aufgebraucht. Bitte warte ein paar Minuten.";
+      } else {
+        antwortFeld.textContent = "Fehler im Backend (Status " + response.status + "): " + grund;
+      }
+    } else {
+      const daten = await response.json();
+      antwortFeld.textContent = daten.antwort;
+
+      // Wurde ein Termin angelegt, die Terminliste und die Monatsansicht neu laden
+      if (daten.kalender_geaendert) {
+        document.getElementById("calendarButton").click();
+      }
     }
 
-    const daten = await response.json();
-    antwortFeld.textContent = daten.antwort;
-
   } catch (fehler) {
+    // Die Anfrage kam gar nicht beim Backend an
     console.error(fehler);
-    antwortFeld.textContent = "Der Assistent ist gerade nicht erreichbar. Läuft das Backend?";
+    antwortFeld.textContent = "Das Backend ist nicht erreichbar. Läuft es auf Port 8000?";
   }
 
   chatWartetAufAntwort = false;
