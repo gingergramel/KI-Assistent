@@ -13,6 +13,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREDENTIALS_FILE = os.path.join(BASE_DIR, "credentials.json")
 TOKEN_FILE = os.path.join(BASE_DIR, "token.json")
 
+VIENNA = ZoneInfo("Europe/Vienna")
+
 
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
@@ -175,3 +177,99 @@ def create_event(titel, start_datetime, dauer_minuten=60):
         "nachricht": "Termin wurde erfolgreich erstellt.",
         "termin": erstelltes_event
     }
+
+
+def _auf_wien(dt):
+    """Zeiten ohne Zeitzone gelten als Wiener Zeit, andere werden nach Wien umgerechnet."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=VIENNA)
+    return dt.astimezone(VIENNA)
+
+
+def update_event(event_id, titel=None, start_datetime=None, dauer_minuten=None):
+    """Ändert Titel, Startzeit und/oder Dauer eines Termins.
+    Bei einer neuen Zeit wird auf Konflikte geprüft. Der Termin selbst zählt dabei nicht als Konflikt."""
+
+    service = get_calendar_service()
+    event = service.events().get(calendarId="primary", eventId=event_id).execute()
+
+    aenderungen = {}
+
+    if titel is not None and titel.strip():
+        aenderungen["summary"] = titel.strip()
+
+    if start_datetime is not None or dauer_minuten is not None:
+        if "dateTime" not in event["start"]:
+            return {
+                "geaendert": False,
+                "nachricht": "Ganztägige Termine können hier nur im Titel geändert werden."
+            }
+
+        alter_start = _auf_wien(datetime.fromisoformat(event["start"]["dateTime"]))
+        altes_ende = _auf_wien(datetime.fromisoformat(event["end"]["dateTime"]))
+
+        neuer_start = _auf_wien(start_datetime) if start_datetime is not None else alter_start
+
+        if dauer_minuten is not None:
+            dauer = dauer_minuten
+        else:
+            dauer = int((altes_ende - alter_start).total_seconds() // 60)
+
+        if dauer <= 0:
+            raise ValueError("Die Dauer muss größer als 0 sein.")
+
+        neues_ende = neuer_start + timedelta(minutes=dauer)
+
+        # Termine im neuen Zeitraum suchen, der Termin selbst und "frei"-Termine zählen nicht
+        im_zeitraum = service.events().list(
+            calendarId="primary",
+            timeMin=neuer_start.isoformat(),
+            timeMax=neues_ende.isoformat(),
+            singleEvents=True,
+            orderBy="startTime"
+        ).execute().get("items", [])
+
+        konflikte = [
+            {
+                "start": e["start"]["dateTime"],
+                "end": e["end"]["dateTime"],
+                "titel": e.get("summary", "Ohne Titel")
+            }
+            for e in im_zeitraum
+            if e["id"] != event_id
+            and "dateTime" in e["start"]
+            and e.get("transparency") != "transparent"
+        ]
+
+        if konflikte:
+            return {
+                "geaendert": False,
+                "nachricht": "Änderung nicht möglich. Zeitraum belegt.",
+                "konflikte": konflikte
+            }
+
+        aenderungen["start"] = {"dateTime": neuer_start.isoformat(), "timeZone": "Europe/Vienna"}
+        aenderungen["end"] = {"dateTime": neues_ende.isoformat(), "timeZone": "Europe/Vienna"}
+
+    if not aenderungen:
+        return {"geaendert": False, "nachricht": "Es gab nichts zu ändern."}
+
+    aktualisiert = service.events().patch(
+        calendarId="primary",
+        eventId=event_id,
+        body=aenderungen
+    ).execute()
+
+    return {
+        "geaendert": True,
+        "nachricht": "Termin wurde geändert.",
+        "termin": aktualisiert
+    }
+
+
+def delete_event(event_id):
+    """Löscht einen Termin aus dem Google-Kalender."""
+    service = get_calendar_service()
+    service.events().delete(calendarId="primary", eventId=event_id).execute()
+
+    return {"geloescht": True, "nachricht": "Termin wurde gelöscht."}
