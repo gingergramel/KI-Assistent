@@ -1,10 +1,12 @@
 import os
+import time
 from datetime import datetime
 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+import tools
 from tools import (
     termine_abrufen,
     termin_anlegen,
@@ -21,6 +23,10 @@ client = genai.Client(
 )
 
 MODEL = "gemini-3.6-flash"
+
+# Bei Überlastung (503) bis zu 3 Versuche, mit 2 s und 4 s Pause dazwischen
+MAX_VERSUCHE = 3
+WARTEZEIT_SEKUNDEN = 2
 
 WOCHENTAGE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
 
@@ -43,6 +49,12 @@ def _system_anweisung():
         "Für Termine, Wetter und Nachrichten nutzt du immer die Werkzeuge und erfindest nie Daten. "
         "Bestätige angelegte Termine mit Titel, Datum und Uhrzeit."
     )
+
+
+def _ist_ueberlastet(fehler) -> bool:
+    """Erkennt, ob Gemini wegen Überlastung abgelehnt hat (503)."""
+    text = str(fehler)
+    return "503" in text or "UNAVAILABLE" in text
 
 
 def ask_gemini(prompt: str):
@@ -69,7 +81,22 @@ def chat_mit_gemini(session_id: str, nachricht: str) -> dict:
         _sessions[session_id] = chat
 
     kalender_wurde_geaendert()  # Merker zurücksetzen
-    antwort = chat.send_message(nachricht)
+
+    antwort = None
+    for versuch in range(MAX_VERSUCHE):
+        try:
+            antwort = chat.send_message(nachricht)
+            break
+        except Exception as fehler:
+            letzter_versuch = versuch == MAX_VERSUCHE - 1
+            termin_schon_angelegt = tools._kalender_geaendert
+
+            if not _ist_ueberlastet(fehler) or letzter_versuch or termin_schon_angelegt:
+                raise
+
+            pause = WARTEZEIT_SEKUNDEN * (versuch + 1)
+            print(f"Gemini überlastet, neuer Versuch in {pause} s ({versuch + 1}/{MAX_VERSUCHE})")
+            time.sleep(pause)
 
     return {
         "antwort": antwort.text or "Dazu konnte ich leider keine Antwort erzeugen.",
