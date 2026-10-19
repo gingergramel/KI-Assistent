@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 from calendar_service import get_upcoming_events, get_events_between, create_event
 from news import get_top_news
 from weather import get_weather_auto_json
+from mail_service import get_inbox_mails
 
 VIENNA = ZoneInfo("Europe/Vienna")
 
@@ -124,3 +125,43 @@ def news_abrufen(thema: str = "Österreich") -> dict:
     except Exception as fehler:
         print("Fehler bei den News:", fehler)
         return {"fehler": "Die News konnten nicht abgerufen werden."}
+
+
+def mails_abrufen(anzahl: int = 10) -> dict:
+    """Liest die neuesten E-Mails aus dem Gmail-Posteingang.
+
+    Nur verwenden, wenn der Benutzer ausdrücklich nach
+    seinen E-Mails oder seinem Posteingang fragt.
+
+    Args:
+        anzahl: Anzahl der abzurufenden E-Mails.
+                Standardmäßig 10, maximal 20.
+    """
+
+    try:
+        anzahl = max(1, min(int(anzahl), 20))
+
+        mails = get_inbox_mails(anzahl)
+
+        ergebnis = []
+
+        for mail in mails:
+            ergebnis.append({
+                "id": mail.get("id", ""),
+                "absender": mail.get("from", ""),
+                "betreff": mail.get("subject", ""),
+                "datum": mail.get("date", ""),
+                "vorschau": mail.get("snippet", "")
+            })
+
+        return {
+            "anzahl": len(ergebnis),
+            "mails": ergebnis
+        }
+
+    except Exception as fehler:
+        print("Fehler beim Abrufen der E-Mails:", fehler)
+
+        return {
+            "fehler": "Die E-Mails konnten nicht abgerufen werden."
+        }
