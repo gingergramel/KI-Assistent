@@ -176,5 +176,14 @@ def kalender_pruefen(termin: TerminPruefung):
 
 @app.get("/api/mails")
 def get_mails():
-    return get_inbox_mails(20)
+    try:
+        return get_inbox_mails(20)
 #todo wenn man mehr mails will, dann muss man die variable eine zeile darüber ändern.
+
+    except Exception as fehler:
+        print("MAIL API FEHLER:", repr(fehler))
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(fehler)
+        )

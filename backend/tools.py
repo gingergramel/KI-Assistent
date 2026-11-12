@@ -6,6 +6,7 @@ from news import get_top_news
 from weather import get_weather_auto_json
 from mail_service import get_inbox_mails
 
+
 VIENNA = ZoneInfo("Europe/Vienna")
 
 # Merker, ob im aktuellen Chat ein Termin angelegt wurde (damit das Frontend die Kalenderansicht neu lädt)
@@ -127,8 +128,8 @@ def news_abrufen(thema: str = "Österreich") -> dict:
         return {"fehler": "Die News konnten nicht abgerufen werden."}
 
 
-def mails_abrufen(anzahl: int = 10) -> dict:
-    """Liest die neuesten E-Mails aus dem Gmail-Posteingang.
+def mails_abrufen(anzahl: int = 20, tage: int = 0) -> dict:
+    """Liest E-Mails aus dem Gmail-Posteingang.
 
     Nur verwenden, wenn der Benutzer ausdrücklich nach
     seinen E-Mails oder seinem Posteingang fragt.
@@ -136,12 +137,22 @@ def mails_abrufen(anzahl: int = 10) -> dict:
     Args:
         anzahl: Anzahl der abzurufenden E-Mails.
                 Standardmäßig 10, maximal 20.
+
+        tage: Optionaler Zeitraum in Tagen.
+              0 = kein Zeitraumfilter.
+              Beispiel:
+              3 = E-Mails der letzten 3 Tage.
+              7 = E-Mails der letzten 7 Tage.
     """
 
     try:
         anzahl = max(1, min(int(anzahl), 20))
+        tage = max(0, int(tage))
 
-        mails = get_inbox_mails(anzahl)
+        mails = get_inbox_mails(
+            max_results=anzahl,
+            tage=tage if tage > 0 else None
+        )
 
         ergebnis = []
 
@@ -156,6 +167,7 @@ def mails_abrufen(anzahl: int = 10) -> dict:
 
         return {
             "anzahl": len(ergebnis),
+            "tage": tage,
             "mails": ergebnis
         }
 

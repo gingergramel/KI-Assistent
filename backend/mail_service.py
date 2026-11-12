@@ -1,24 +1,22 @@
+
 import os
+from datetime import datetime, timedelta, timezone
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CREDENTIALS_FILE = os.path.join(BASE_DIR, "credentials.json")
 TOKEN_FILE = os.path.join(BASE_DIR, "token.json")
-
 
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/calendar.events",
     "https://www.googleapis.com/auth/gmail.readonly",
 ]
-
-
 def get_gmail_service():
     creds = None
 
@@ -47,15 +45,25 @@ def get_gmail_service():
         "v1",
         credentials=creds
     )
-
-
-def get_inbox_mails(max_results=20):
+def get_inbox_mails(max_results=100, tage=None):
     service = get_gmail_service()
 
+    parameter = {
+        "userId": "me",
+        "labelIds": ["INBOX"],
+        "maxResults": max_results
+    }
+
+    # Nur filtern, wenn wirklich ein Zeitraum angegeben wurde
+    if tage is not None and tage > 0:
+        startdatum = datetime.now(timezone.utc) - timedelta(days=tage)
+
+        parameter["q"] = (
+            f"after:{startdatum.strftime('%Y/%m/%d')}"
+        )
+
     result = service.users().messages().list(
-        userId="me",
-        labelIds=["INBOX"],
-        maxResults=max_results
+        **parameter
     ).execute()
 
     messages = result.get("messages", [])
@@ -77,7 +85,7 @@ def get_inbox_mails(max_results=20):
         headers = msg.get("payload", {}).get("headers", [])
 
         mail = {
-            "id": msg.get("id"),
+            "id": msg.get("id", ""),
             "from": "",
             "subject": "(Kein Betreff)",
             "date": "",

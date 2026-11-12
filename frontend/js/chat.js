@@ -14,6 +14,43 @@ function fuegeChatNachrichtHinzu(text, absender) {
   verlauf.scrollTop = verlauf.scrollHeight;
   return nachricht;
 }
+// zeigt mails schöner an 
+function zeigeMailsImChat(container, mails) {
+  container.textContent = "";
+
+  const titel = document.createElement("div");
+  titel.classList.add("chat-mail-ueberschrift");
+  titel.textContent = "Hier sind deine E-Mails:";
+  container.appendChild(titel);
+
+  mails.forEach((mail) => {
+    const box = document.createElement("div");
+    box.classList.add("chat-mail-box");
+
+    const absender = document.createElement("div");
+    absender.classList.add("chat-mail-from");
+    absender.textContent = mail.absender || "";
+
+    const betreff = document.createElement("div");
+    betreff.classList.add("chat-mail-subject");
+    betreff.textContent = mail.betreff || "(Kein Betreff)";
+
+    const datum = document.createElement("div");
+    datum.classList.add("chat-mail-date");
+    datum.textContent = mail.datum || "";
+
+    const vorschau = document.createElement("div");
+    vorschau.classList.add("chat-mail-snippet");
+    vorschau.textContent = mail.vorschau || "";
+
+    box.appendChild(absender);
+    box.appendChild(betreff);
+    box.appendChild(datum);
+    box.appendChild(vorschau);
+
+    container.appendChild(box);
+  });
+}
 
 async function sendeChatNachricht() {
   if (chatWartetAufAntwort) return;
@@ -57,7 +94,15 @@ async function sendeChatNachricht() {
       }
     } else {
       const daten = await response.json();
-      antwortFeld.textContent = daten.antwort;
+
+      console.log("CHAT DATEN:", daten);
+      console.log("MAILS:", daten.mails);
+
+      if (daten.mails && daten.mails.length > 0) {
+        zeigeMailsImChat(antwortFeld, daten.mails);
+      }     else {
+          antwortFeld.textContent = daten.antwort;
+          }
 
       // Wurde ein Termin angelegt, die Terminliste und die Monatsansicht neu laden
       if (daten.kalender_geaendert) {
