@@ -3,9 +3,16 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, HTMLResponse
+from googleapiclient.errors import HttpError
 from pydantic import BaseModel
 
-from calendar_service import get_upcoming_events, create_event, check_calendar_availability
+from calendar_service import (
+    get_upcoming_events,
+    create_event,
+    update_event,
+    delete_event,
+    check_calendar_availability,
+)
 from mail_service import get_inbox_mails
 from weather import get_weather_forecast, format_weather_human, get_weather_auto_human, get_weather_auto_json
 from news import get_top_news, format_news_human, format_news_html
@@ -30,6 +37,12 @@ class NeuerTermin(BaseModel):
     titel: str
     start: str  # Format: "2026-10-05T14:30"
     dauer_minuten: int = 60
+
+
+class TerminAenderung(BaseModel):
+    titel: str | None = None
+    start: str | None = None  # Format: "2026-10-05T14:30"
+    dauer_minuten: int | None = None
 
 
 class TerminPruefung(BaseModel):
@@ -126,10 +139,16 @@ def kalender():
             "dateTime",
             event["start"].get("date")
         )
+        ende = event["end"].get(
+            "dateTime",
+            event["end"].get("date")
+        )
 
         termine.append({
+            "id": event["id"],
             "titel": event.get("summary", "Ohne Titel"),
-            "start": start
+            "start": start,
+            "ende": ende
         })
 
     return {"termine": termine}
@@ -137,7 +156,7 @@ def kalender():
 
 @app.post("/kalender/termin")
 def termin_anlegen(termin: NeuerTermin):
-    """Prüft die Verfügbarkeit und erstellt den Termin."""
+    """Legt einen Termin an. Gibt es am selben Tag schon einen mit gleichem Namen, wird er verschoben."""
 
     start_datetime = datetime.fromisoformat(termin.start)
 
@@ -150,6 +169,7 @@ def termin_anlegen(termin: NeuerTermin):
     if not ergebnis["erstellt"]:
         return {
             "erstellt": False,
+            "aktualisiert": False,
             "nachricht": ergebnis["nachricht"],
             "konflikte": ergebnis.get("konflikte", [])
         }
@@ -158,11 +178,60 @@ def termin_anlegen(termin: NeuerTermin):
 
     return {
         "erstellt": True,
-        "nachricht": "Termin wurde erfolgreich erstellt.",
+        "aktualisiert": ergebnis.get("aktualisiert", False),
+        "nachricht": ergebnis["nachricht"],
         "titel": erstelltes_event.get("summary"),
         "start": erstelltes_event["start"].get("dateTime"),
         "ende": erstelltes_event["end"].get("dateTime")
     }
+
+
+@app.put("/kalender/termin/{event_id}")
+def termin_aendern(event_id: str, aenderung: TerminAenderung):
+    """Ändert Titel, Startzeit und/oder Dauer eines bestehenden Termins."""
+    try:
+        start_datetime = datetime.fromisoformat(aenderung.start) if aenderung.start else None
+
+        ergebnis = update_event(
+            event_id,
+            aenderung.titel,
+            start_datetime,
+            aenderung.dauer_minuten
+        )
+    except ValueError as fehler:
+        raise HTTPException(status_code=400, detail=str(fehler))
+    except HttpError as fehler:
+        if fehler.resp.status == 404:
+            raise HTTPException(status_code=404, detail="Termin nicht gefunden.")
+        raise HTTPException(status_code=502, detail="Google hat die Änderung abgelehnt: " + str(fehler))
+
+    if not ergebnis["geaendert"]:
+        return {
+            "geaendert": False,
+            "nachricht": ergebnis["nachricht"],
+            "konflikte": ergebnis.get("konflikte", [])
+        }
+
+    geaendert = ergebnis["termin"]
+
+    return {
+        "geaendert": True,
+        "nachricht": ergebnis["nachricht"],
+        "titel": geaendert.get("summary"),
+        "start": geaendert["start"].get("dateTime"),
+        "ende": geaendert["end"].get("dateTime")
+    }
+
+
+@app.delete("/kalender/termin/{event_id}")
+def termin_loeschen(event_id: str):
+    """Löscht einen Termin aus dem Google-Kalender."""
+    try:
+        return delete_event(event_id)
+    except HttpError as fehler:
+        if fehler.resp.status in (404, 410):
+            raise HTTPException(status_code=404, detail="Termin nicht gefunden.")
+        raise HTTPException(status_code=502, detail="Google hat das Löschen abgelehnt: " + str(fehler))
 
 
 @app.post("/kalender/pruefen")

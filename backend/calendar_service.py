@@ -53,6 +53,13 @@ def get_calendar_service():
     )
 
 
+def _auf_wien(dt):
+    """Zeiten ohne Zeitzone gelten als Wiener Zeit, andere werden nach Wien umgerechnet."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=VIENNA)
+    return dt.astimezone(VIENNA)
+
+
 def get_upcoming_events(max_results=10):
     service = get_calendar_service()
 
@@ -135,34 +142,126 @@ def check_calendar_availability(start_datetime, dauer_minuten=60):
     }
 
 
-def create_event(titel, start_datetime, dauer_minuten=60):
-    """Erstellt einen Termin nur, wenn der Zeitraum frei ist."""
+# ===== Pro Tag darf ein Terminname nur einmal vorkommen =====
 
+def _normalisiert(text):
+    """Vergleicht Namen ohne Rücksicht auf Groß-/Kleinschreibung und überflüssige Leerzeichen."""
+    return " ".join((text or "").split()).casefold()
+
+
+def _termine_am_tag(service, tag):
+    """Alle Termine mit Uhrzeit, die an diesem Kalendertag (Wiener Zeit) beginnen."""
+    tag_start = datetime(tag.year, tag.month, tag.day, tzinfo=VIENNA)
+    tag_ende = tag_start + timedelta(days=1)
+
+    items = service.events().list(
+        calendarId="primary",
+        timeMin=tag_start.isoformat(),
+        timeMax=tag_ende.isoformat(),
+        singleEvents=True,
+        orderBy="startTime"
+    ).execute().get("items", [])
+
+    ergebnis = []
+    for e in items:
+        if "dateTime" not in e["start"]:
+            continue  # ganztägige Einträge zählen hier nicht
+        beginn = _auf_wien(datetime.fromisoformat(e["start"]["dateTime"]))
+        if beginn.date() == tag:
+            ergebnis.append(e)
+
+    return ergebnis
+
+
+def _finde_gleichen_namen(service, titel, tag, ausser_id=None):
+    """Sucht an diesem Tag einen Termin mit demselben Namen. Gibt ihn zurück oder None."""
+    gesucht = _normalisiert(titel)
+
+    for e in _termine_am_tag(service, tag):
+        if ausser_id and e["id"] == ausser_id:
+            continue
+        if _normalisiert(e.get("summary")) == gesucht:
+            return e
+
+    return None
+
+
+def create_event(titel, start_datetime, dauer_minuten=60):
+    """Legt einen Termin an. Pro Tag darf ein Terminname nur einmal vorkommen:
+    Gibt es am selben Tag schon einen Termin mit diesem Namen, wird er stattdessen
+    auf die neue Zeit verschoben. Sonst wird nur angelegt, wenn der Zeitraum frei ist."""
+
+    if dauer_minuten <= 0:
+        raise ValueError("Die Dauer muss größer als 0 sein.")
+
+    start = _auf_wien(start_datetime)
+    ende = start + timedelta(minutes=dauer_minuten)
+
+    service = get_calendar_service()
+    vorhanden = _finde_gleichen_namen(service, titel, start.date())
+
+    if vorhanden is not None:
+        name = vorhanden.get("summary", titel)
+        alter_start = _auf_wien(datetime.fromisoformat(vorhanden["start"]["dateTime"]))
+        altes_ende = _auf_wien(datetime.fromisoformat(vorhanden["end"]["dateTime"]))
+
+        if alter_start == start and altes_ende == ende:
+            return {
+                "erstellt": False,
+                "aktualisiert": False,
+                "nachricht": f"Der Termin „{name}“ steht an diesem Tag schon genau so im Kalender.",
+                "konflikte": []
+            }
+
+        ergebnis = update_event(
+            vorhanden["id"],
+            start_datetime=start,
+            dauer_minuten=dauer_minuten
+        )
+
+        if not ergebnis.get("geaendert"):
+            return {
+                "erstellt": False,
+                "aktualisiert": False,
+                "nachricht": (
+                    f"Den Termin „{name}“ gibt es an diesem Tag schon, er wurde aber nicht verschoben. "
+                    + ergebnis.get("nachricht", "")
+                ),
+                "konflikte": ergebnis.get("konflikte", [])
+            }
+
+        return {
+            "erstellt": True,
+            "aktualisiert": True,
+            "nachricht": f"Den Termin „{name}“ gab es an diesem Tag schon, er wurde auf die neue Zeit verschoben.",
+            "termin": ergebnis["termin"]
+        }
+
+    # Kein Termin mit diesem Namen an diesem Tag: neu anlegen, wenn der Zeitraum frei ist
     pruefung = check_calendar_availability(
-        start_datetime,
+        start,
         dauer_minuten
     )
 
     if not pruefung["verfuegbar"]:
         return {
             "erstellt": False,
+            "aktualisiert": False,
             "nachricht": "Termin konnte nicht erstellt werden. Zeitraum belegt.",
             "konflikte": pruefung["konflikte"]
         }
 
-    service = get_calendar_service()
-
-    start = datetime.fromisoformat(pruefung["start"])
-    ende = datetime.fromisoformat(pruefung["ende"])
+    neuer_start = datetime.fromisoformat(pruefung["start"])
+    neues_ende = datetime.fromisoformat(pruefung["ende"])
 
     event = {
         "summary": titel,
         "start": {
-            "dateTime": start.isoformat(),
+            "dateTime": neuer_start.isoformat(),
             "timeZone": "Europe/Vienna"
         },
         "end": {
-            "dateTime": ende.isoformat(),
+            "dateTime": neues_ende.isoformat(),
             "timeZone": "Europe/Vienna"
         }
     }
@@ -174,31 +273,37 @@ def create_event(titel, start_datetime, dauer_minuten=60):
 
     return {
         "erstellt": True,
+        "aktualisiert": False,
         "nachricht": "Termin wurde erfolgreich erstellt.",
         "termin": erstelltes_event
     }
 
 
-def _auf_wien(dt):
-    """Zeiten ohne Zeitzone gelten als Wiener Zeit, andere werden nach Wien umgerechnet."""
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=VIENNA)
-    return dt.astimezone(VIENNA)
-
-
 def update_event(event_id, titel=None, start_datetime=None, dauer_minuten=None):
     """Ändert Titel, Startzeit und/oder Dauer eines Termins.
-    Bei einer neuen Zeit wird auf Konflikte geprüft. Der Termin selbst zählt dabei nicht als Konflikt."""
+    Der Name darf an dem Tag nur einmal vorkommen, und bei einer neuen Zeit wird auf Konflikte geprüft.
+    Der Termin selbst zählt dabei nicht als Konflikt."""
 
     service = get_calendar_service()
     event = service.events().get(calendarId="primary", eventId=event_id).execute()
 
     aenderungen = {}
+    neuer_titel = event.get("summary", "")
 
     if titel is not None and titel.strip():
-        aenderungen["summary"] = titel.strip()
+        neuer_titel = titel.strip()
+        aenderungen["summary"] = neuer_titel
 
-    if start_datetime is not None or dauer_minuten is not None:
+    zeit_aendern = start_datetime is not None or dauer_minuten is not None
+
+    ziel_tag = None
+    if "dateTime" in event["start"]:
+        ziel_tag = _auf_wien(datetime.fromisoformat(event["start"]["dateTime"])).date()
+
+    neuer_start = None
+    neues_ende = None
+
+    if zeit_aendern:
         if "dateTime" not in event["start"]:
             return {
                 "geaendert": False,
@@ -219,7 +324,22 @@ def update_event(event_id, titel=None, start_datetime=None, dauer_minuten=None):
             raise ValueError("Die Dauer muss größer als 0 sein.")
 
         neues_ende = neuer_start + timedelta(minutes=dauer)
+        ziel_tag = neuer_start.date()
 
+    # Pro Tag darf ein Name nur einmal vorkommen
+    if ziel_tag is not None and (aenderungen or zeit_aendern):
+        doppelt = _finde_gleichen_namen(service, neuer_titel, ziel_tag, ausser_id=event_id)
+
+        if doppelt is not None:
+            return {
+                "geaendert": False,
+                "nachricht": (
+                    f"Am {ziel_tag:%d.%m.%Y} gibt es schon einen Termin „{neuer_titel}“. "
+                    "Pro Tag darf ein Name nur einmal vorkommen."
+                )
+            }
+
+    if zeit_aendern:
         # Termine im neuen Zeitraum suchen, der Termin selbst und "frei"-Termine zählen nicht
         im_zeitraum = service.events().list(
             calendarId="primary",
