@@ -566,10 +566,12 @@ button:hover {
   color: var(--text-gedaempft);
 }
 
+/* Termin in der Monatsansicht: Zeit und Titel oben, Schaltflächen in einer eigenen Zeile */
 .kal-termin {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
   align-items: baseline;
+  gap: 4px 12px;
   background: var(--flaeche);
   border: 1px solid var(--rand);
   border-left: 3px solid var(--gold);
@@ -578,6 +580,7 @@ button:hover {
 }
 
 .kal-termin-zeit {
+  flex: 0 0 auto;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--gold-dunkel);
@@ -585,7 +588,42 @@ button:hover {
 }
 
 .kal-termin-name {
+  flex: 1 1 120px;
+  min-width: 0;
   font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* ===== Termine bearbeiten und löschen ===== */
+.termin-aktionen {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.kal-termin .termin-aktionen {
+  flex: 1 1 100%;
+  margin: 6px 0 0 0;
+}
+
+.aktion-button {
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid var(--rand);
+  padding: 3px 10px;
+  font-size: 0.8rem;
+}
+
+.aktion-button:hover {
+  background: var(--gold-tint);
+}
+
+.aktion-button.loeschen {
+  color: #9b1c1c;
+}
+
+.aktion-button.loeschen:hover {
+  background: #f8e4e4;
 }
 
 /* ===== Mail ===== */

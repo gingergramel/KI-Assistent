@@ -16,28 +16,31 @@
   const btnMonat = document.getElementById("ansicht-monat");
   const btnListe = document.getElementById("ansicht-liste");
 
-  // Liest die Termine aus der Liste, die "Termine abrufen" bereits aufgebaut hat
-  function leseTermineAusListe() {
-    const ergebnis = [];
-    liste.querySelectorAll(".calendar-event").forEach((karte) => {
-      const titelEl = karte.querySelector(".calendar-event-title");
-      const datumEl = karte.querySelector(".calendar-event-date");
-      const zeitEl = karte.querySelector(".calendar-event-time");
+  function uhrzeit(datum) {
+    return datum.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" });
+  }
 
-      const datum = (datumEl ? datumEl.textContent : "").match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
-      if (!datum) return;
+  // Übernimmt die Termine, die calendar.js vom Backend geladen hat
+  function uebernimmTermine() {
+    termine = (window.kalenderTermine || []).map((original) => {
+      // Ganztägige Termine haben nur ein Datum (JJJJ-MM-TT) ohne Uhrzeit
+      if (!original.start.includes("T")) {
+        const [j, m, t] = original.start.split("-").map(Number);
+        return { original, jahr: j, monat: m - 1, tag: t, zeit: "", zeitText: "ganztägig" };
+      }
 
-      const zeit = (zeitEl ? zeitEl.textContent : "").match(/\d{1,2}:\d{2}/);
+      const start = new Date(original.start);
+      const ende = new Date(original.ende);
 
-      ergebnis.push({
-        titel: titelEl ? titelEl.textContent.trim() : "",
-        tag: Number(datum[1]),
-        monat: Number(datum[2]) - 1,
-        jahr: Number(datum[3]),
-        zeit: zeit ? zeit[0] : ""
-      });
+      return {
+        original,
+        jahr: start.getFullYear(),
+        monat: start.getMonth(),
+        tag: start.getDate(),
+        zeit: uhrzeit(start),
+        zeitText: uhrzeit(start) + " – " + uhrzeit(ende)
+      };
     });
-    return ergebnis;
   }
 
   function termineAm(tag) {
@@ -162,13 +165,22 @@
         heutigeTermine.forEach((t) => {
           const eintrag = document.createElement("div");
           eintrag.className = "kal-termin";
+
           const zeit = document.createElement("span");
           zeit.className = "kal-termin-zeit";
-          zeit.textContent = t.zeit || "ganztägig";
+          zeit.textContent = t.zeitText;
+
           const name = document.createElement("span");
           name.className = "kal-termin-name";
-          name.textContent = t.titel;
+          name.textContent = t.original.titel;
+
           eintrag.append(zeit, name);
+
+          // Bearbeiten und Löschen, gebaut von calendar.js
+          if (window.baueTerminAktionen) {
+            eintrag.appendChild(window.baueTerminAktionen(t.original));
+          }
+
           tagesliste.appendChild(eintrag);
         });
       }
@@ -187,11 +199,11 @@
   btnMonat.addEventListener("click", () => zeigeAnsicht("monat"));
   btnListe.addEventListener("click", () => zeigeAnsicht("liste"));
 
-  // Sobald "Termine abrufen" die Liste neu aufbaut, Monatsansicht aktualisieren
-  new MutationObserver(() => {
-    termine = leseTermineAusListe();
+  // Sobald calendar.js neue Termine geladen hat, die Monatsansicht aktualisieren
+  document.addEventListener("termine-geladen", () => {
+    uebernimmTermine();
     zeichne();
-  }).observe(liste, { childList: true, subtree: true });
+  });
 
   zeichne();
   zeigeAnsicht("monat");
